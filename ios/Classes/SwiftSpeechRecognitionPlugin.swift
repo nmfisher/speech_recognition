@@ -126,11 +126,11 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
 
     recognitionRequest.shouldReportPartialResults = true
 
-    let speechRecognizer = getRecognizer(lang: lang)
+    let speechRecognizer = try? getRecognizer(lang: lang)
     
     print("Invoking recognizer with lang : \(lang)")
 
-    recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
+    recognitionTask = speechRecognizer!.recognitionTask(with: recognitionRequest) { result, error in
       var isFinal = false
 
       if let result = result {
@@ -182,9 +182,10 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
     case "de_DE":
         return speechRecognizerDe
     default:
-      throw lang
+        throw SpeechRecognizerError.invalidLanguage
     }
-  }
+  
+}
 
   public func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
     speechChannel?.invokeMethod("speech.onSpeechAvailability", arguments: available)
@@ -195,3 +196,7 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
 fileprivate func convertFromAVAudioSessionCategory(_ input: AVAudioSession.Category) -> String {
 	return input.rawValue
 }
+enum SpeechRecognizerError: Error {
+    case invalidLanguage
+}
+
