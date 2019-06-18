@@ -15,6 +15,8 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
   private let speechRecognizerRu = SFSpeechRecognizer(locale: Locale(identifier: "ru_RU"))!
   private let speechRecognizerIt = SFSpeechRecognizer(locale: Locale(identifier: "it_IT"))!
   private let speechRecognizerEs = SFSpeechRecognizer(locale: Locale(identifier: "es_ES"))!
+  private let speechRecognizerCn = SFSpeechRecognizer(locale: Locale(identifier: "zh_CN"))!
+  private let speechRecognizerDe = SFSpeechRecognizer(locale: Locale(identifier: "de_DE"))!
 
   private var speechChannel: FlutterMethodChannel?
 
@@ -51,6 +53,8 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
     speechRecognizerRu.delegate = self
     speechRecognizerIt.delegate = self
     speechRecognizerEs.delegate = self
+    speechRecognizerCn.delegate = self
+    speechRecognizerDe.delegate = self
 
     SFSpeechRecognizer.requestAuthorization { authStatus in
       OperationQueue.main.addOperation {
@@ -123,6 +127,8 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
     recognitionRequest.shouldReportPartialResults = true
 
     let speechRecognizer = getRecognizer(lang: lang)
+    
+    print("Invoking recognizer with lang : \(lang)")
 
     recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
       var isFinal = false
@@ -159,7 +165,7 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
     speechChannel!.invokeMethod("speech.onRecognitionStarted", arguments: nil)
   }
 
-  private func getRecognizer(lang: String) -> Speech.SFSpeechRecognizer {
+  private func getRecognizer(lang: String) throws -> Speech.SFSpeechRecognizer {
     switch (lang) {
     case "fr_FR":
       return speechRecognizerFr
@@ -171,8 +177,12 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
       return speechRecognizerIt
     case "es_ES":
         return speechRecognizerEs
+    case "zh_CN":
+        return speechRecognizerCn
+    case "de_DE":
+        return speechRecognizerDe
     default:
-      return speechRecognizerFr
+      throw lang
     }
   }
 
